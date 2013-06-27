@@ -38,6 +38,17 @@ function table.Random(tab)
 	end
 end
 
+function getUsers()
+	local UserCollection = chat.ActiveMembers
+	local tab = {}
+
+	for i = 1, UserCollection.Count do
+		table.insert(tab, UserCollection:Item(i))
+	end
+	
+	return tab
+end
+
 function include(path)
 	local s, r = pcall(loadfile, path)
 
@@ -52,7 +63,6 @@ function include(path)
 		end
 	end
 end
-
 
 do -- http
 	function string.NiceSize(num)

@@ -18,7 +18,10 @@ end
 refresh()
 
 function restart()
-	os.execute("start lua " .. arg[0])
+	if os.getenv("OS") == "Windows_NT" then
+		os.execute("start lua " .. arg[0])
+	end
+
 	os.exit()
 end
 
@@ -103,7 +106,7 @@ include("anime.lua")
 include("hentai.lua")
 
 hook.Add("PersonSay", "Monitor", function(pl, str)
-	print(os.date(), pl.FullName, str)
+	print(os.date(), pl.FullName ~= "" and (pl.FullName .. "(" .. pl.Handle .. ")") or pl.Handle, str)
 end)
 
 hook.Add("PersonSay", "Lua", function(pl, str)
@@ -156,6 +159,8 @@ Say = function(s) chat:SendMessage(tostring(s)) end
 	_, _, title = data:find[[<meta property="og:title" content="([^"]+)">]]
 	Say(title)
 end)]=]
+
+--local inp = lanes.gen(function() return io.read() end)
 
 while 1 do
 	hook.Call("Think")

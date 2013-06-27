@@ -14,7 +14,10 @@ end
 function hook.Call(hk, ...)
 	if hooks[hk] then
 		for k, fn in pairs(hooks[hk]) do
-			fn(...)
+			local ret = {fn(...)}
+			if #ret>0 then
+				return unpack(ret)
+			end
 		end
 	end
 end

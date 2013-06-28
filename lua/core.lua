@@ -2,6 +2,7 @@ print (" ========================== ")
 
 require "luacom"
 require "socket"
+luasocket = require"luasocket"
 
 http = require"socket.http"
 
@@ -37,6 +38,10 @@ function table.Random(tab)
 		end
 	end
 end
+
+SysTime = os.clock
+CurTime = os.clock -- ???
+RealTime = os.clock
 
 function getUsers()
 	local UserCollection = chat.ActiveMembers
@@ -114,6 +119,7 @@ include("timer.lua")
 timer.Create("CollectGarbage", 5, 0, collectgarbage)
 include("anime.lua")
 include("hentai.lua")
+include("gelbooru.lua")
 
 hook.Add("PersonSay", "Monitor", function(pl, str)
 	print(os.date(), pl.FullName ~= "" and (pl.FullName .. "(" .. pl.Handle .. ")") or pl.Handle, str)
@@ -129,7 +135,9 @@ hook.Add("PersonSay", "Lua", function(pl, str)
 		return
 	end
 
+	local _print = print
 	_G["me"] = pl
+	print = Say
 
 	local s, r = pcall(loadstring, str, pl.FullName)
 
@@ -141,6 +149,8 @@ hook.Add("PersonSay", "Lua", function(pl, str)
 			Say(e)
 		end
 	end
+
+	print = _print
 end)
 
 local count = chat.Messages.Count
@@ -158,12 +168,16 @@ hook.Add("Think", "GetMessages", function()
 		count = newCount
 		for i = 1, delta do
 			local msg = chat.Messages:Item(i)
-			hook.Call("PersonSay", msg.Sender, msg.Body)
+			hook.Call("PersonSay", msg.Sender, msg.Body, msg)
 		end
 	end
 end)
 
 Say = function(s) chat:SendMessage(tostring(s)) end
+
+hook.Add("Think", "socket_think", function()
+	luasocket.Update()
+end)
 
 --[=[http.Get("http://www.youtube.com/watch?v=4GkL0LPyYew&feature=g-feat", function(data)
 	_, _, title = data:find[[<meta property="og:title" content="([^"]+)">]]

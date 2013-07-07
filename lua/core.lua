@@ -13,7 +13,8 @@ end
 local blob="TxjzXtCTc5yqq0I6O-8dBa2n7rDqsbTYf3ffCwduQ-0kFj5bn5UleK1pzqK01DuDnXLCeTEZ2xK8XN-N4kf8jTnWYtf5PI8EGZUgU-oaMQzw4SertRUo9LZaknDtjnuAFTVHTnw"
 
 function refresh()
-	skype = luacom.CreateObject("Skype4COM.Skype")
+	skype = luacom.CreateObject("Skype4COM.Skype", "Skype_")
+	skype:Attach(5)
 	chat = skype:FindChatUsingBlob(blob)
 end
 refresh()
@@ -120,6 +121,7 @@ timer.Create("CollectGarbage", 5, 0, collectgarbage)
 include("anime.lua")
 include("hentai.lua")
 include("gelbooru.lua")
+include("hush.lua")
 
 hook.Add("PersonSay", "Monitor", function(pl, str)
 	print(os.date(), pl.FullName ~= "" and (pl.FullName .. "(" .. pl.Handle .. ")") or pl.Handle, str)
@@ -186,7 +188,15 @@ end)]=]
 
 --local inp = lanes.gen(function() return io.read() end)
 
+local usr = skype:User()
+usr.Handle = "echo123"
+print(usr.FullName)
+
 while 1 do
+	local cmd = skype:Command()
+	cmd.Command = "PING"
+	cmd.Blocking = false
+	skype:SendCommand(cmd)
 	hook.Call("Think")
 	sleep(1/3)
 end

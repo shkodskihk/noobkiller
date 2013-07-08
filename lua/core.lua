@@ -4,28 +4,61 @@ require "luacom"
 require "socket"
 luasocket = require"luasocket"
 
-http = require"socket.http"
-
 function sleep(sec)
     socket.select(nil, nil, sec)
 end
 
-local blob="TxjzXtCTc5yqq0I6O-8dBa2n7rDqsbTYf3ffCwduQ-0kFj5bn5UleK1pzqK01DuDnXLCeTEZ2xK8XN-N4kf8jTnWYtf5PI8EGZUgU-oaMQzw4SertRUo9LZaknDtjnuAFTVHTnw"
+local default_chat="TxjzXtCTc5yqq0I6O-8dBa2n7rDqsbTYf3ffCwduQ-0kFj5bn5UleK1pzqK01DuDnXLCeTEZ2xK8XN-N4kf8jTnWYtf5PI8EGZUgU-oaMQzw4SertRUo9LZaknDtjnuAFTVHTnw"
 
-function refresh()
-	skype = luacom.CreateObject("Skype4COM.Skype", "Skype_")
-	skype:Attach(5)
-	chat = skype:FindChatUsingBlob(blob)
+skype = luacom.CreateObject("Skype4COM.Skype", "Skype_")
+
+TAttachmentStatus = {
+	[-1] = "AttachUnknown",
+	[0] = "AttachSuccess",
+	[1] = "AttachPendingAuthorization",
+	[2] = "AttachRefused",
+	[3] = "AttachNotAvailable",
+	[4] = "AttachAvailable"	
+}
+
+TConnectionStatus = {
+	[-1] = "conUnknown",
+	[0] = "conOffline",
+	[1] = "conConnecting",
+	[2] = "conPausing",
+	[3] = "conOnline"
+}
+
+events = {
+	AttachmentStatus = function(a,b) print(TAttachmentStatus[b]) end,
+
+	ConnectionStatus = function(_, b) print(TConnectionStatus[b]) end,
+
+	Command = function(a,b)
+				--print("CMD", b.Command) 
+			end,
+	Reply = function(a,b)
+				--print("REPLY", b.Reply)
+			end,
+
+	MessageStatus = function(_, msg)
+		if msg.Type == 4 then
+			hook.Call("PersonSay", msg.Sender, msg.Body, msg)
+		end
+
+		print(msg.Status, msg.Body, msg.Type)
+	end,
+
+}
+
+setmetatable(events, {__index = function(_, key) print("Unhandled event: " .. key) end})
+
+if not skype.Client.IsRunning then
+	skype.Client:Start()
 end
-refresh()
 
-function restart()
-	if os.getenv("OS") == "Windows_NT" then
-		os.execute("start lua " .. arg[0])
-	end
-
-	os.exit()
-end
+luacom.Connect(skype, events)
+skype:Attach(nil, false)
 
 math.randomseed(os.time()); math.random(); math.random()
 
@@ -44,7 +77,7 @@ SysTime = os.clock
 CurTime = os.clock -- ???
 RealTime = os.clock
 
-function getUsers()
+function getUsers(chat)
 	local UserCollection = chat.ActiveMembers
 	local tab = {}
 
@@ -65,7 +98,7 @@ function include(path)
 	else
 		local s, e = pcall(r)
 		if not s then
-			Say("Error while including (II) " .. path .. ": \n" .. (tostring(r) or "N\\A"))
+			Say("Error while including (II) " .. path .. ": \n" .. (tostring(e) or "N\\A"))
 		end
 	end
 end
@@ -78,41 +111,6 @@ do -- http
 			return math.ceil(num / 1024) .. " KB"
 		end
 	end
-
-	function http.Size(addr)
-		_, err, h, terr = http.request {
-			method = "HEAD",
-			url = addr,
-		}
-
-		return tonumber(h["content-length"])
-	end
-
-	function http.Head(addr)
-		_, err, h, terr = http.request {
-			method = "HEAD",
-			url = addr,
-		}
-
-		return h
-	end
-
-	function http.Get(addr, cb)
-		local data, cb = "", cb or function()end
-
-		_, err, _, terr = http.request {
-			method = "GET",
-			url = addr,
-			sink = function(d)
-				if d == nil then
-					cb(data)
-				else
-					data = data .. d
-					return true
-				end
-			end
-		}
-	end
 end
 
 include("hooks.lua")
@@ -122,15 +120,21 @@ include("anime.lua")
 include("hentai.lua")
 include("gelbooru.lua")
 include("hush.lua")
+--include("mtgox.lua")
 
-hook.Add("PersonSay", "Monitor", function(pl, str)
-	print(os.date(), pl.FullName ~= "" and (pl.FullName .. "(" .. pl.Handle .. ")") or pl.Handle, str)
+hook.Add("PersonSay", "Monitor", function(pl, str, msg)
+	print(msg.Timestamp, pl.FullName ~= "" and (pl.FullName .. "(" .. pl.Handle .. ")") or pl.Handle, str)
 end)
 
-hook.Add("PersonSay", "Lua", function(pl, str)
+hook.Add("PersonSay", "Lua", function(pl, str, msg)
 	local _,_,str = str:find("!l (.*)")
 
 	if not str then return end
+
+	local _Say = Say
+	_G.Say = function(line)
+		msg.Chat:SendMessage(line)
+	end
 
 	if pl.Handle ~= "noiwex" then
 		Say("Access denied: " .. pl.Handle)
@@ -138,7 +142,7 @@ hook.Add("PersonSay", "Lua", function(pl, str)
 	end
 
 	local _print = print
-	_G["me"] = pl
+	_G.me = pl
 	print = Say
 
 	local s, r = pcall(loadstring, str, pl.FullName)
@@ -153,50 +157,21 @@ hook.Add("PersonSay", "Lua", function(pl, str)
 	end
 
 	print = _print
+	Say = _Say
 end)
 
-local count = chat.Messages.Count
-local lastAct = chat.ActivityTimestamp
-hook.Add("Think", "GetMessages", function()
-	if chat.ActivityTimestamp ~= lastAct then
-		lastAct = chat.ActivityTimestamp
-		refresh()
-	end
-
-	local newCount = chat.Messages.Count
-
-	local delta = newCount - count
-	if delta > 0 then
-		count = newCount
-		for i = 1, delta do
-			local msg = chat.Messages:Item(i)
-			hook.Call("PersonSay", msg.Sender, msg.Body, msg)
-		end
-	end
-end)
-
-Say = function(s) chat:SendMessage(tostring(s)) end
+Say = function(s) skype:FindChatUsingBlob(default_chat):SendMessage(tostring(s)) end
 
 hook.Add("Think", "socket_think", function()
 	luasocket.Update()
 end)
 
---[=[http.Get("http://www.youtube.com/watch?v=4GkL0LPyYew&feature=g-feat", function(data)
-	_, _, title = data:find[[<meta property="og:title" content="([^"]+)">]]
-	Say(title)
-end)]=]
-
---local inp = lanes.gen(function() return io.read() end)
-
-local usr = skype:User()
-usr.Handle = "echo123"
-print(usr.FullName)
+--[[local usr = skype:User()
+usr.Handle = "python1320"
+Say(usr.FullName)]]
 
 while 1 do
-	local cmd = skype:Command()
-	cmd.Command = "PING"
-	cmd.Blocking = false
-	skype:SendCommand(cmd)
+	skype:Attach(nil, false)
 	hook.Call("Think")
-	sleep(1/3)
+	sleep(.33)
 end

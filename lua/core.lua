@@ -29,25 +29,36 @@ TConnectionStatus = {
 	[3] = "conOnline"
 }
 
-events = {
-	AttachmentStatus = function(a,b) print(TAttachmentStatus[b]) end,
+events = {}
 
-	ConnectionStatus = function(_, b) print(TConnectionStatus[b]) end,
+function events:AttachmentStatus(b)
+	print(TAttachmentStatus[b])
+end
 
-	Command = function(a,b)
-				--print("CMD", b.Command) 
-			end,
-	Reply = function(a,b)
-				--print("REPLY", b.Reply)
-			end,
+function events:ConnectionStatus(b)
+	print(TConnectionStatus[b])
+end
 
-	MessageStatus = function(_, msg, status)
-		if (status == 1 or status == 2) and msg.Type == 4 then
-			hook.Call("PersonSay", msg.Sender, msg.Body, msg)
-		end
-	end,
+function events:Command(b)
+	--print("CMD", b.Command) 
+end
 
-}
+function events:Reply(b)
+	--print("REPLY", b.Reply)
+end
+
+function events:MessageStatus(msg, status)
+	if (status == 1 or status == 2) and msg.Type == 4 then
+		hook.Call("PersonSay", msg.Sender, msg.Body, msg)
+	end
+end
+
+function events:UserAuthorizationRequestReceived(usr)
+	print(usr.handle .. " requests auth")
+	print("Text: ", usr.ReceivedAuthRequest)
+	usr.BuddyStatus = 3 -- accept request
+	skype:SendMessage(usr.Handle, "Request accepted automatically")
+end
 
 setmetatable(events, {__index = function(_, key) print("Unhandled event: " .. key) end})
 

@@ -29,7 +29,6 @@ TConnectionStatus = {
 	[3] = "conOnline"
 }
 
-local twice = ""
 events = {
 	AttachmentStatus = function(a,b) print(TAttachmentStatus[b]) end,
 
@@ -42,13 +41,10 @@ events = {
 				--print("REPLY", b.Reply)
 			end,
 
-	MessageStatus = function(_, msg)
-		if ((msg.Status == 1 and msg.Timestamp ~= twice) or msg.Status == 2) and msg.Type == 4 then
-			twice = msg.Status == 1 and msg.Timestamp or twice
+	MessageStatus = function(_, msg, status)
+		if (status == 1 or status == 2) and msg.Type == 4 then
 			hook.Call("PersonSay", msg.Sender, msg.Body, msg)
 		end
-
-		--print(msg.Status, msg.Body, msg.Type)
 	end,
 
 }
@@ -145,6 +141,7 @@ hook.Add("PersonSay", "Lua", function(pl, str, msg)
 
 	local _print = print
 	_G.me = pl
+	chat = msg.Chat
 	print = Say
 
 	local s, r = pcall(loadstring, str, pl.FullName)

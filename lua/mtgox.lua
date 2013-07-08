@@ -24,7 +24,7 @@ end
 function Shout()
 	Update(function()
 		local delta = CurPrice - LastPrice
-		Say("[mtgox] Current BTC Price: $" .. CurPrice .. " ( delta: $" .. delta .. " )")
+		Say("[mtgox] Current BTC Price: $" .. CurPrice .. " ( delta: $" .. math.floor(delta * 1000)/1000 .. " )")
 	end)
 end
 

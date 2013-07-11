@@ -56,8 +56,16 @@ end
 function events:UserAuthorizationRequestReceived(usr)
 	print(usr.handle .. " requests auth")
 	print("Text: ", usr.ReceivedAuthRequest)
-	usr.BuddyStatus = 3 -- accept request
+	usr.IsAuthorized = true
+	skype.Friends:Add(usr)
+	usr.BuddyStatus = 2 -- accept request
 	skype:SendMessage(usr.Handle, "Request accepted automatically")
+
+	if usr.ReceivedAuthRequest:lower():find("gay") and InviteToGayChat then
+		timer.Simple(1, function()
+			InviteToGayChat(usr, true)
+		end)
+	end
 end
 
 setmetatable(events, {__index = function(_, key) print("Unhandled event: " .. key) end})
@@ -125,11 +133,6 @@ end
 include("hooks.lua")
 include("timer.lua")
 timer.Create("CollectGarbage", 5, 0, collectgarbage)
-include("anime.lua")
-include("hentai.lua")
-include("gelbooru.lua")
-include("hush.lua")
---include("mtgox.lua")
 
 hook.Add("PersonSay", "Monitor", function(pl, str, msg)
 	print(msg.Timestamp, pl.FullName ~= "" and (pl.FullName .. "(" .. pl.Handle .. ")") or pl.Handle, str)

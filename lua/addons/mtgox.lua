@@ -21,10 +21,10 @@ function Update(cb)
 	end)
 end
 
-function Shout()
+function Shout(chat)
 	Update(function()
 		local delta = CurPrice - LastPrice
-		Say("[mtgox] Current BTC Price: $" .. CurPrice .. " ( delta: $" .. math.floor(delta * 1000)/1000 .. " )")
+		chat:SendMessage("[mtgox] Current BTC Price: $" .. CurPrice .. " ( delta: $" .. math.floor(delta * 1000)/1000 .. " )")
 	end)
 end
 
@@ -32,8 +32,8 @@ Update()
 
 timer.Create("mtgox", 600, 0, Shout)
 
-hook.Add("PersonSay", "mtgox", function(pl, line)
+hook.Add("PersonSay", "mtgox", function(pl, line, msg)
 	if line:find("^!btc",1) or line:find("^!bitcoin",1) or line:find("^!mtgox",1) then
-		Shout()
+		Shout(msg.Chat)
 	end
 end)

@@ -720,13 +720,13 @@ local quotes = {
 
 HENTAI_QUOTES = quotes
 
-function HentaiSayRandom(ply)
+function HentaiSayRandom(ply, chat)
 	local text = table.Random(quotes):gsub("{NAME}", ply.FullName or ":(")
-	Say(string.anime and string.anime(text) or text)
+	chat:SendMessage(string.anime and string.anime(text) or text)
 end
 
-hook.Add("PersonSay", 0, function(pl, str)
+hook.Add("PersonSay", 0, function(pl, str, msg)
 	if str:lower():find("hentai") or str:lower():find("yaoi") or str:lower():find("boys") or str:lower():find("sex") or str:lower():find("trap") then
-		HentaiSayRandom(pl)
+		HentaiSayRandom(pl, msg.Chat)
 	end
 end)

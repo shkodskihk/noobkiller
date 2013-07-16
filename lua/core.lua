@@ -128,6 +128,21 @@ include("hooks.lua")
 include("timer.lua")
 timer.Create("CollectGarbage", 5, 0, collectgarbage)
 
+if pcall(require, "lfs") then
+	function LoadAddons()
+		for file in lfs.dir("addons") do
+			if file ~= "." and file ~= ".." then
+				local attr=lfs.attributes("addons/" ..file)
+				if attr.mode ~= "directory" then
+					include("addons/"..file)
+				end
+			end
+		end
+	end
+
+	LoadAddons()
+end
+
 hook.Add("PersonSay", "Monitor", function(pl, str, msg)
 	print(msg.Timestamp, pl.FullName ~= "" and (pl.FullName .. "(" .. pl.Handle .. ")") or pl.Handle, str)
 end)
@@ -142,8 +157,7 @@ hook.Add("PersonSay", "Lua", function(pl, str, msg)
 		msg.Chat:SendMessage(line)
 	end
 
-	if pl.Handle ~= "noiwex" then
-		Say("Access denied: " .. pl.Handle)
+	if pl.Handle ~= skype.CurrentUser.Handle then
 		return
 	end
 

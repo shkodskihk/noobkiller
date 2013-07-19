@@ -55,10 +55,11 @@ end
 hook.Add("PersonSay", "Source", function(pl, line, msg)
 	local _, _, ip, port = line:find("([%d%.]+):(%d+)")
 
-	Query(ip, port, function(tab)
-		msg.Chat:SendMessage(tab.name .. "\n" ..
-			"Game: " .. tab.game .. "\n" .. 
-			tab.players .. "/" .. tab.maxplayers .. " players on map " .. tab.map
-		)
-	end)
+	if ip and port then
+		Query(ip, port, function(tab)
+			msg.Chat:SendMessage(tab.name .. "\n" ..
+				"Game: " .. tab.game .. "\n" .. 
+				tab.players .. "/" .. tab.maxplayers .. " players on map " .. tab.map)
+		end)
+	end
 end)

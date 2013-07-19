@@ -28,8 +28,6 @@ function Shout(chat)
 	end)
 end
 
-Update()
-
 hook.Add("PersonSay", "mtgox", function(pl, line, msg)
 	if line:find("^!btc",1) or line:find("^!bitcoin",1) or line:find("^!mtgox",1) then
 		Shout(msg.Chat)

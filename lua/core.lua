@@ -152,19 +152,28 @@ hook.Add("PersonSay", "Lua", function(pl, str, msg)
 
 	if not str then return end
 
-	local _Say = Say
-	_G.Say = function(line)
-		msg.Chat:SendMessage(line)
-	end
-
 	if pl.Handle ~= skype.CurrentUser.Handle then
 		return
 	end
 
-	local _print = print
-	_G.me = pl
-	chat = msg.Chat
-	print = Say
+	local Say = function(line)
+		msg.Chat:SendMessage(line)
+	end
+
+	local globals = {
+		Say = Say,
+		me = pl,
+		we = getUsers(msg.Chat),
+		chat = msg.Chat,
+		print = Say,
+	}
+
+	local copy = {}
+
+	for k, v in pairs(globals) do
+		copy[k] = _G[k]
+		_G[k] = v
+	end
 
 	local s, r = pcall(loadstring, str, pl.FullName)
 
@@ -177,8 +186,13 @@ hook.Add("PersonSay", "Lua", function(pl, str, msg)
 		end
 	end
 
-	print = _print
-	Say = _Say
+	for k, v in pairs(globals) do
+		_G[k] = nil
+	end
+
+	for k, v in pairs(copy) do
+		_G[k] = v
+	end
 end)
 
 Say = function(s) skype:FindChatUsingBlob(default_chat):SendMessage(tostring(s)) end

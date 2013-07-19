@@ -47,6 +47,12 @@ function events:Reply(b)
 	--print("REPLY", b.Reply)
 end
 
+function events:GroupUsers()
+end
+
+function events:ContactsFocused()
+end
+
 function events:MessageStatus(msg, status)
 	if (status == 1 or status == 2) and msg.Type == 4 then
 		hook.Call("PersonSay", msg.Sender, msg.Body, msg)
@@ -56,10 +62,26 @@ end
 function events:UserAuthorizationRequestReceived(usr)
 	print(usr.handle .. " requests auth")
 	print("Text: ", usr.ReceivedAuthRequest)
-	usr.IsAuthorized = true
-	skype.Friends:Add(usr)
-	usr.BuddyStatus = 2 -- accept request
-	skype:SendMessage(usr.Handle, "Request accepted automatically")
+	hook.Call("AuthRequest", usr, usr.ReceivedAuthRequest)
+end
+
+function events:UserMood(usr, str)
+	print('[mood] ' .. usr.handle, str)
+end
+
+local OnlineStatus = {
+	[-1] = "crossed galaxy through matter and time",
+	[0] = "goes offline",
+	"goes online",
+	"is away",
+	"is not available",
+	"goes into DnD",
+	"SkypeOut",
+	"SkypeMe",
+}
+
+function events:OnlineStatus(usr, status)
+	print('[stat] ' .. usr.handle .. ' ' .. OnlineStatus(status))
 end
 
 setmetatable(events, {__index = function(_, key) print("Unhandled event: " .. key) end})
@@ -185,10 +207,6 @@ Say = function(s) skype:FindChatUsingBlob(default_chat):SendMessage(tostring(s))
 hook.Add("Think", "socket_think", function()
 	luasocket.Update()
 end)
-
---[[local usr = skype:User()
-usr.Handle = "python1320"
-Say(usr.FullName)]]
 
 while 1 do
 	skype:Attach(nil, false)

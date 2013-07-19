@@ -99,21 +99,6 @@ function getUsers(chat)
 	return tab
 end
 
-function include(path)
-	local s, r = pcall(loadfile, path)
-
-	local Say = Say or print
-
-	if not s then
-		Say("Error while including " .. path .. ": \n" .. (tostring(r) or "N\\A"))
-	else
-		local s, e = pcall(r)
-		if not s then
-			Say("Error while including (II) " .. path .. ": \n" .. (tostring(e) or "N\\A"))
-		end
-	end
-end
-
 do -- http
 	function string.NiceSize(num)
 		if num < 1024 then
@@ -124,8 +109,8 @@ do -- http
 	end
 end
 
-include("hooks.lua")
-include("timer.lua")
+require("hooks")
+require("timer")
 timer.Create("CollectGarbage", 5, 0, collectgarbage)
 
 if pcall(require, "lfs") then
@@ -134,7 +119,7 @@ if pcall(require, "lfs") then
 			if file ~= "." and file ~= ".." then
 				local attr=lfs.attributes("addons/" ..file)
 				if attr.mode ~= "directory" then
-					include("addons/"..file)
+					require("addons/"..file:gsub(".lua$", ""))
 				end
 			end
 		end

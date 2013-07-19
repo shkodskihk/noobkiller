@@ -1,4 +1,8 @@
-require("bit")
+local ok = pcall(require, 'bit')
+
+if not ok then
+	print("Can't load bit module!!!!"); return
+end
 
 local line = string.char(0xff, 0xff, 0xff, 0xff, 0x54, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6e, 0x67, 0x69, 0x6e, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00)
 
@@ -50,8 +54,6 @@ end
 
 hook.Add("PersonSay", "Source", function(pl, line, msg)
 	local _, _, ip, port = line:find("([%d%.]+):(%d+)")
-
-	print(ip, port)
 
 	Query(ip, port, function(tab)
 		msg.Chat:SendMessage(tab.name .. "\n" ..

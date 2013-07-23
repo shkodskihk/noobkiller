@@ -10,3 +10,7 @@ Following modules are required to get this thing to work:
 * lua file system for addons
 
 Some addons use json and luaxml
+
+## Running in Sandboxie ##
+
+Afaik, COM can interact with applications running in sandboxie, so you should have no problem using skoope with it.

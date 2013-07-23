@@ -2,6 +2,20 @@ function sleep(sec)
     socket.select(nil, nil, sec)
 end
 
+function PrintTable(tab, depth)
+	depth = depth or 0
+
+	for k, v in pairs(tab) do
+		if type(v) ~= "table" then
+			print( ("\t"):rep(depth) .. tostring(k) .. "\t=\t" .. tostring(v) )
+		else
+			print( ("\t"):rep(depth) .. tostring(k) .. "\t=\t{" )
+			PrintTable(v, depth + 1)
+			print( ("\t"):rep(depth) .. "}" )
+		end
+	end
+end
+
 math.randomseed(os.time()); math.random(); math.random()
 
 function table.Random(tab)

@@ -1,7 +1,7 @@
 skoope
 ======
 
-Utility to Skype made on Lua.
+Utility for Skype made in Lua.
 Lua communication with Skype is set through Skype4Com.
 
 Following modules are required to get this thing to work:

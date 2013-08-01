@@ -11,6 +11,17 @@ function hook.Add(hk, name, fun)
 	hooks[hk][name] = fun
 end
 
+function hook.Remove(hk, name)
+	if hooks[hk] and hooks[hk][name] then
+		print("Removing hook",hk,name)
+		hooks[hk][name] = nil
+	end
+end
+
+function hook.GetTable()
+	return hooks
+end
+
 function hook.Call(hk, ...)
 	if hooks[hk] then
 		for k, fn in pairs(hooks[hk]) do

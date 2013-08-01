@@ -12,6 +12,9 @@ function timer.Create(name, delay, count, func)
 	}
 end
 
+function timer.Remove(name)
+	timers[name] = nil
+end
 
 local function CheckTimers()
 	for name, tab in pairs(timers) do

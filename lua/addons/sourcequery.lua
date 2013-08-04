@@ -38,15 +38,12 @@ function Query(addr, port, cb)
 			tab.players = str:sub(1,1):byte()
 			tab.maxplayers = str:sub(2,2):byte()
 			str = str:sub(3)
-
-			--[[for c in str:gmatch(".") do
-				print(c:byte(), c)
-			end]]
 		elseif str:sub(1, 1):byte() == 0x6d then
 
 		end
 
-		cb(tab)
+		pcall(cb, tab)
+		cl:Close()
 	end
 
 	cl:Send(line)

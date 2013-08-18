@@ -21,8 +21,8 @@ if pcall(require, "lfs") then
 		for file in lfs.dir("addons") do
 			if file ~= "." and file ~= ".." then
 				local attr=lfs.attributes("addons/" ..file)
-				if attr.mode ~= "directory" then
-					require("addons/"..file:gsub(".lua$", ""))
+				if attr.mode ~= "directory" and file:find("%.lua$") then
+					require("addons/"..file:gsub("%.lua$", ""))
 				end
 			end
 		end

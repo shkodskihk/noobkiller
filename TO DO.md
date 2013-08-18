@@ -5,3 +5,4 @@
 * crosslua, crosschat?
 * linux?
 * port to lua jit so we can have fun things like ffi?
+* fix unicode issues

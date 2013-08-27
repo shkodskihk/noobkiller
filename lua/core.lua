@@ -1,8 +1,6 @@
 package.path = "?.lua;modules\\?.lua;"
 package.cpath = "..\\bin\\libs\\?.dll;"
 
-print (" ========================== ")
-
 _G.ffi = require("ffi")
 
 require("luacom")
@@ -63,58 +61,6 @@ function LoadAddons()
 end
 
 LoadAddons()
-
-hook.Add("PersonSay", "Monitor", function(pl, str, msg)
-	print(msg.Timestamp, pl.FullName ~= "" and (pl.FullName .. "(" .. pl.Handle .. ")") or pl.Handle, str)
-end)
-
-hook.Add("PersonSay", "Lua", function(pl, str, msg)
-	local _,_,str = str:find("!l (.*)")
-
-	if not str then return end
-
-	if os.getenv("username") ~= "Noiwex" and pl.Handle ~= skype.CurrentUser.Handle then
-		return
-	end
-
-	local Say = function(line)
-		msg.Chat:SendMessage(line)
-	end
-
-	local globals = {
-		Say = Say,
-		me = pl,
-		we = getUsers(msg.Chat),
-		chat = msg.Chat,
-		print = Say,
-	}
-
-	local copy = {}
-
-	for k, v in pairs(globals) do
-		copy[k] = _G[k]
-		_G[k] = v
-	end
-
-	local s, r = pcall(loadstring, str, pl.FullName)
-
-	if not s then
-		Say(r)
-	else
-		local s, e = pcall(r)
-		if not s then
-			Say(e)
-		end
-	end
-
-	for k, v in pairs(globals) do
-		_G[k] = nil
-	end
-
-	for k, v in pairs(copy) do
-		_G[k] = v
-	end
-end)
 
 local default_chat="TxjzXtCTc5yqq0I6O-8dBa2n7rDqsbTYf3ffCwduQ-0kFj5bn5UleK1pzqK01DuDnXLCeTEZ2xK8XN-N4kf8jTnWYtf5PI8EGZUgU-oaMQzw4SertRUo9LZaknDtjnuAFTVHTnw"
 Say = function(s) skype:FindChatUsingBlob(default_chat):SendMessage(tostring(s)) end

@@ -44,6 +44,21 @@ function getUsers(chat)
 	return tab
 end
 
+function debug.trace()
+	print("Debug Trace:")
+	local i = 0
+	while 1 do
+		i = i + 1
+		local tab = debug.getinfo(i, "Sln")
+		
+		if tab == nil then
+			return
+		end
+
+		print(i, tab.short_src .. ":" .. tab.currentline)
+	end
+end
+
 do -- http
 	function string.NiceSize(num)
 		if num < 1024 then

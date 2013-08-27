@@ -1,5 +1,5 @@
-require"luaxml"
-local json=require"json"
+pcall(require, "luaxml")
+local _, json=pcall(require, "json")
 
 local ratings = {s='safe',q='nsfw?!',e='nsfw'}
 

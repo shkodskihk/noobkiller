@@ -1,5 +1,5 @@
 @echo off
 cd "%~dp0\lua"
 :begin
-lua core.lua
+..\bin\lua.exe core.lua
 goto begin

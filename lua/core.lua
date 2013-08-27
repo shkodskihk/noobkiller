@@ -1,3 +1,6 @@
+package.path = package.path .. ";modules\\?.lua"
+package.cpath = package.cpath .. ";\..\\bin\\libs\\?.dll"
+
 print (" ========================== ")
 
 require("luacom")

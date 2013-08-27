@@ -10,8 +10,38 @@ if not skype.Client.IsRunning then
 	skype.Client:Start()
 end
 
-require("events"); skype:Attach(nil, false);
 require("utils")
+
+Config = {}
+
+function ReloadConfig()
+	local ok, ret, err = pcall(loadfile, "config.lua")
+	if ret then
+		local env = {}
+		setmetatable(env, {
+			__newindex = function(_, key, val)
+				if type(val) == "function" then
+					print("Config execution warning: Why did you pass a function?")
+					debug.trace()
+					return
+				end
+				Config[key] = val
+			end
+		})
+		setfenv(ret, env)
+
+		local ok, ret = pcall(ret)
+		if not ok then
+			print("Confing execution error: ", ret)
+		end
+	else
+		print("Config load error: ", err)
+	end
+end
+
+ReloadConfig()
+
+require("events"); skype:Attach(nil, false);
 require("hooks")
 require("timer")
 timer.Create("CollectGarbage", 5, 0, collectgarbage)

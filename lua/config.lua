@@ -2,7 +2,7 @@
 -- to edit some settings just declare a variable
 -- for example: test = 1; test2 = "woah"; test3 = {'tables', 'work'}
 
-sleeptime = .33
+sleeptime = .01
 
 AddonBlacklist = {
 	['foo'] = true,

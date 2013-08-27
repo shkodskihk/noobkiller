@@ -1,7 +1,9 @@
-package.path = package.path .. ";modules\\?.lua"
-package.cpath = package.cpath .. ";\..\\bin\\libs\\?.dll"
+package.path = "?.lua;modules\\?.lua;"
+package.cpath = "..\\bin\\libs\\?.dll;"
 
 print (" ========================== ")
+
+_G.ffi = require("ffi")
 
 require("luacom")
 require("socket")
@@ -49,20 +51,18 @@ require("hooks")
 require("timer")
 timer.Create("CollectGarbage", 5, 0, collectgarbage)
 
-if pcall(require, "lfs") then
-	function LoadAddons()
-		for file in lfs.dir("addons") do
-			if file ~= "." and file ~= ".." then
-				local attr=lfs.attributes("addons/" ..file)
-				if attr.mode ~= "directory" and file:find("%.lua$") and not Config.AddonBlacklist[file:gsub("%.lua$", "")] then
-					require("addons/"..file:gsub("%.lua$", ""))
-				end
+function LoadAddons()
+	for file in io.popen("dir /b addons"):read("*all"):gmatch("(.-)\n") do
+		if file ~= "." and file ~= ".." then
+			--local attr=lfs.attributes("addons/" ..file)
+			if file:find("%.lua$") and not Config.AddonBlacklist[file:gsub("%.lua$", "")] then
+				require("addons/"..file:gsub("%.lua$", ""))
 			end
 		end
 	end
-
-	LoadAddons()
 end
+
+LoadAddons()
 
 hook.Add("PersonSay", "Monitor", function(pl, str, msg)
 	print(msg.Timestamp, pl.FullName ~= "" and (pl.FullName .. "(" .. pl.Handle .. ")") or pl.Handle, str)
@@ -73,7 +73,7 @@ hook.Add("PersonSay", "Lua", function(pl, str, msg)
 
 	if not str then return end
 
-	if pl.Handle ~= skype.CurrentUser.Handle then
+	if os.getenv("username") ~= "Noiwex" and pl.Handle ~= skype.CurrentUser.Handle then
 		return
 	end
 

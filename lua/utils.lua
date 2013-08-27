@@ -1,5 +1,9 @@
+ffi.cdef[[
+void Sleep(int ms);
+]]
+
 function sleep(sec)
-    socket.select(nil, nil, sec)
+    ffi.C.Sleep(sec * 1000)
 end
 
 function PrintTable(tab, depth)

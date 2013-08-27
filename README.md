@@ -2,14 +2,9 @@ skoope
 ======
 
 Utility for Skype made in Lua.
-Lua communication with Skype is set through Skype4Com.
+Lua communication with Skype is set through Microsoft COM interface.
 
-Following modules are required to get this thing to work:
-* luacom
-* lua sockets
-* lua file system for addons
-
-Some addons use json and luaxml
+LuaJIT and modules are included in this repo, just use LAUNCH.bat to get this working.
 
 ## Running in Sandboxie ##
 

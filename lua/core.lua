@@ -51,7 +51,7 @@ if pcall(require, "lfs") then
 		for file in lfs.dir("addons") do
 			if file ~= "." and file ~= ".." then
 				local attr=lfs.attributes("addons/" ..file)
-				if attr.mode ~= "directory" and file:find("%.lua$") then
+				if attr.mode ~= "directory" and file:find("%.lua$") and not Config.AddonBlacklist[file:gsub("%.lua$", "")] then
 					require("addons/"..file:gsub("%.lua$", ""))
 				end
 			end
@@ -123,5 +123,5 @@ end)
 while 1 do
 	skype:Attach(nil, false)
 	hook.Call("Think")
-	sleep(.33)
+	sleep(Config.sleeptime or .33)
 end

@@ -1,27 +1,29 @@
 TAttachmentStatus = {
 	[-1] = "AttachUnknown",
-	[0] = "AttachSuccess",
-	[1] = "AttachPendingAuthorization",
-	[2] = "AttachRefused",
-	[3] = "AttachNotAvailable",
-	[4] = "AttachAvailable"	
+	[0] = "Client is successfully attached",
+	[1] = "Waiting for user authorization",
+	[2] = "User has explicitly denied access to the client",
+	[3] = "Skype API is not available",
+	[4] = "Skype API is available"	
 }
 
 TConnectionStatus = {
 	[-1] = "conUnknown",
-	[0] = "conOffline",
-	[1] = "conConnecting",
-	[2] = "conPausing",
-	[3] = "conOnline"
+	[0] = "Connection does not exist",
+	[1] = "Establishing connection",
+	[2] = "Connection is pausing",
+	[3] = "Made connection"
 }
 
 events = {}
 
 function events:AttachmentStatus(b)
+	SetColor(0x1a); io.write("[api] "); ResetColor()
 	print(TAttachmentStatus[b])
 end
 
 function events:ConnectionStatus(b)
+	SetColor(0x1a); io.write("[api] "); ResetColor()
 	print(TConnectionStatus[b])
 end
 
@@ -58,17 +60,17 @@ end
 local OnlineStatus = {
 	[-1] = "crossed galaxy through matter and time",
 	[0] = "goes offline",
-	"goes online",
-	"is away",
-	"is not available",
-	"goes into DnD",
-	"SkypeOut",
-	"SkypeMe",
+	[1] = "goes online",
+	[2] = "is away",
+	[3] = "is not available",
+	[4] = "goes into DnD",
+	[5] = "SkypeOut",
+	[6] = "SkypeMe",
 }
 
 function events:OnlineStatus(usr, status)
 	print('[stat] ' .. usr.handle .. ' ' .. OnlineStatus(status))
 end
 
-setmetatable(events, {__index = function(_, key) print("Unhandled event: " .. key) end})
+setmetatable(events, {__index = function(_, key) SetColor(0x1c); io.write("Unhandled event: "); ResetColor(); print(key) end})
 luacom.Connect(skype, events)

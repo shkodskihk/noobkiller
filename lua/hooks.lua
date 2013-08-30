@@ -2,8 +2,6 @@ hook = {}
 local hooks = {}
 
 function hook.Add(hk, name, fun)
-	print("Adding hook",hk,name,fun)
-
 	if not hooks[hk] then
 		hooks[hk] = {}
 	end
@@ -13,7 +11,6 @@ end
 
 function hook.Remove(hk, name)
 	if hooks[hk] and hooks[hk][name] then
-		print("Removing hook",hk,name)
 		hooks[hk][name] = nil
 	end
 end

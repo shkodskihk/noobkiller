@@ -13,6 +13,8 @@ if not skype.Client.IsRunning then
 	skype.Client:Start()
 end
 
+os.execute("color 17")
+require("color")
 require("utils")
 
 Config = {}

@@ -1,3 +1,4 @@
+* make color output smarter
 * resolve skype:Attach() spam problem
 * make a "sandboxed" lua mode
 * ~~addon_blacklist.txt~~

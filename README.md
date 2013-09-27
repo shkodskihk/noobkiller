@@ -44,6 +44,7 @@ There is already some hooks which can help you in interaction with Skype.
 You can delay/make repeatable function execution by using timers. It's pretty much easy to use them.
 
 ```lua
+timer.Simple(delay, func) -- executes function with certain delay
 timer.Create(name, delay, numberOfRepeats, func) -- numberOfRepeats set to 0 makes timer run forever (as long as main process is alive)
 timer.Remove(name) -- removes timer
 ```

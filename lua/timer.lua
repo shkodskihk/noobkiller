@@ -1,15 +1,27 @@
 timer={}
 local timers={}
 
-local systime = os.clock
+local start = socket.gettime()
+local systime = function()
+	return socket.gettime() - start
+end
 
 function timer.Create(name, delay, count, func)
 	timers[name] = {
 		func = func,
 		delay = delay,
 		runs = count == 0 and math.huge or count,
-		lastrun = -math.huge
+		lastrun = systime()
 	}
+end
+
+function timer.Simple(delay, func)
+	table.insert(timers, {
+		func = func,
+		delay = delay,
+		runs = 1,
+		lastrun = systime()
+	})
 end
 
 function timer.Remove(name)

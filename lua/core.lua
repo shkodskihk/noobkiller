@@ -64,9 +64,6 @@ end
 
 LoadAddons()
 
-local default_chat="TxjzXtCTc5yqq0I6O-8dBa2n7rDqsbTYf3ffCwduQ-0kFj5bn5UleK1pzqK01DuDnXLCeTEZ2xK8XN-N4kf8jTnWYtf5PI8EGZUgU-oaMQzw4SertRUo9LZaknDtjnuAFTVHTnw"
-Say = function(s) skype:FindChatUsingBlob(default_chat):SendMessage(tostring(s)) end
-
 hook.Add("Think", "socket_think", function()
 	luasocket.Update()
 end)

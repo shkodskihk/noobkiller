@@ -65,10 +65,6 @@ function table.HasValue(tab, value)
 	return false
 end
 
-SysTime = os.clock
-CurTime = os.clock -- ???
-RealTime = os.clock
-
 function getUsers(chat)
 	local UserCollection = chat.ActiveMembers
 	local tab = {}

@@ -69,7 +69,7 @@ local OnlineStatus = {
 }
 
 function events:OnlineStatus(usr, status)
-	print('[stat] ' .. usr.handle .. ' ' .. OnlineStatus(status))
+	print('[stat] ' .. usr.handle .. ' ' .. OnlineStatus[status])
 end
 
 setmetatable(events, {__index = function(_, key) SetColor(0x1c); io.write("Unhandled event: "); ResetColor(); print(key) end})

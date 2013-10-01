@@ -1,5 +1,5 @@
 local json=require"json"
-local usr=os.getenv("username")
+local usr="Last.fm login here"
 local apikey="" -- you'll need your own last.fm api key!!!
 
 timer.Create("lastfm", 5, 0, function()

@@ -14,7 +14,7 @@ local function InviteToBlob(usr, greet)
 	end
 end
 
-hook.Add("PersonSay", "Fabulous", function(pl, line)
+hook.Add("PersonSay", "JoinChat", function(pl, line)
 	if line:find("^!chat") then
 		InviteToBlob(pl, true)
 	end

@@ -7,7 +7,7 @@ Only "tcp" and "udp" is supported. Default is tcp. There isn't much of a differe
 By default the socket has a 3 second timeout. The timeout count is started/restarted whenever the mesage is "timeout" and stopped otherwise
 
 luasocket.debug = true
-	will print debug messages about sending and receiving data
+	will logn debug messages about sending and receiving data
 	very useful for (duh) debugging!
 
 -- client
@@ -81,9 +81,9 @@ if _G.luasocket and _G.luasocket.Panic then
 end
 
 -- external functions
-local print = print
-local table_print = PrintTable or table.print or print
-local warning = ErrorNoHalt or print
+local logn = logn
+local table_print = PrintTable or table.print or logn
+local warning = ErrorNoHalt or logn
 local check = check or function() end
 local require = require
 local cares = pcall(require,"cares") or _G.cares
@@ -108,7 +108,7 @@ function luasocket.DebugPrint(...)
 			tbl[i] = tostring(select(i, ...))
 		end
 
-		print(string.format(unpack(tbl)))
+		logn(string.format(unpack(tbl)))
 	end
 end
 
@@ -116,6 +116,8 @@ do -- helpers/usage
 
 	function luasocket.HeaderToTable(header)
 		local tbl = {}
+		
+		if not header then return tbl end
 
 		for line in header:gmatch("(.-)\n") do
 			local key, value = line:match("(.+):%s+(.+)\13")
@@ -132,47 +134,78 @@ do -- helpers/usage
 		local str = ""
 
 		for key, value in pairs(tbl) do
-			str = str .. tostring(key) .. ": " .. tostring(value) .. "\n"
+			str = str .. tostring(key) .. ": " .. tostring(value) .. "\r\n"
 		end
 
 		return str
 	end
 
-	function luasocket.Get(url, callback)
-		check(url, "string")
-		check(callback, "function", "nil", "false")
-
+	local function request(url, callback, method, timeout, post_data, user_agent)		
 		url = url:gsub("http://", "")
 		callback = callback or table_print
+		method = method or "GET"
+		user_agent = user_agent or "goluwa"
 
-		local host, get = url:match("(.-)/(.+)")
+		local host, location = url:match("(.-)/(.+)")
 
-		if not get then
+		if not location then
 			host = url:gsub("/", "")
-			get = ""
+			location = ""
 		end
 
 		local socket = luasocket.Client("tcp")
-		socket:SetTimeout(5)
+		socket:SetTimeout(timeout or 0.5)
 		socket:Connect(host, 80)
 
-		socket:Send(("GET /%s HTTP/1.1\r\n"):format(get))
+		socket:Send(("%s /%s HTTP/1.1\r\n"):format(method, location))
 		socket:Send(("Host: %s\r\n"):format(host))
-		socket:Send("User-Agent: gmod\r\n")
+		socket:Send(("User-Agent: %s\r\n"):format(user_agent))
+		if method == "POST" then
+			socket:Send(("Content-Length: %i"):format(#post_data))
+			socket:Send(post_data)
+		end
 		socket:Send("\r\n")
 
+		local content = {}
+		
 		function socket:OnReceive(str)
+			table.insert(content, str)
+		end
+		
+		function socket:OnClose()
+			local str = table.concat(content, "")
+			
 			local header, content = str:match("(.-\10\13)(.+)")
 
-			local ok, err = pcall(callback, {content = content, header = luasocket.HeaderToTable(header), status = status})
+			local ok, err = xpcall(callback, mmyy.OnError, {content = content, header = luasocket.HeaderToTable(header)})
 			if err then
 				warning(err)
 			end
-
-			self:Remove()
 		end
 	end
+	
+	function luasocket.Get(url, callback, timeout, user_agent)
+		check(url, "string")
+		check(callback, "function", "nil", "false")
+		check(user_agent, "nil", "string")
+		
+		return request(url, callback, "GET", timeout, user_agent)
+	end
+	
+	function luasocket.Post(url, post_data, callback, timeout, user_agent)
+		check(url, "string")
+		check(callback, "function", "nil", "false")
+		check(post_data, "table", "string")
+		check(user_agent, "nil", "string")
+		
+		if type(post_data) == "table" then
+			post_data = luasocket.TableToHeader(post_data)
+		end
+		
+		return request(url, callback, "POST", timeout, post_data, user_agent)
+	end
 
+	local sck = luasocket.socket.udp()
 	function luasocket.SendUDPData(ip, port, str)
 
 		if not str and type(port) == "string" then
@@ -180,9 +213,7 @@ do -- helpers/usage
 			port = tonumber(ip:match(".-:(.+)"))
 		end
 
-		local sck = luasocket.socket.udp()
 		local ok, msg = sck:sendto(str, ip, port)
-		sck:close()
 
 		if ok then
 			luasocket.DebugPrint("SendUDPData sent data to %s:%i (%s)", ip, port, str)
@@ -249,7 +280,7 @@ do -- tcp socket meta
 	function luasocket.Update()
 		for key, sock in pairs(sockets) do
 			if sock:IsValid() then
-				local ok, err = pcall(sock.Think, sock)
+				local ok, err = xpcall(sock.Think, mmyy.OnError, sock)
 				if not ok then
 					warning(err)
 					sock:Remove()
@@ -473,7 +504,11 @@ do -- tcp socket meta
 				end
 				
 				if data then
-					self:DebugPrintf("received (mode %s) %q", mode, data)
+					if data:find("\n") then
+						self:DebugPrintf("received (mode %s) %i bytes of data", mode, #data)
+					else
+						self:DebugPrintf("received (mode %s) %q", mode, data)
+					end
 
 					self:OnReceive(data)
 					self:Timeout(false)
@@ -548,12 +583,23 @@ do -- tcp socket meta
 		end
 
 		function CLIENT:Remove()
+			if self.remove_me then return end
+			
 			self:DebugPrintf("removed")
 			self:OnClose()
-			if self.__server then 
+			
+			remove_socket(self)
+			
+			if self.__server then
+				for k, v in pairs(self.__server.Clients) do
+					if v == self then
+						table.remove(self.__server.Clients, k)
+						break
+					end
+				end
+			
 				self.__server:OnClientClosed(self) 
 			end
-			remove_socket(self)
 		end
 
 		function CLIENT:IsConnected()
@@ -566,14 +612,43 @@ do -- tcp socket meta
 
 		function CLIENT:GetIP()
 			if not self.connected then return "nil" end
-			local ip, port = self.socket:getpeername()
+			local ip, port 
+			
+			if self.__server then 
+				ip, port = self.socket:getpeername()
+			else
+				ip, port = self.socket:getsockname()
+			end
+			
 			return ip
 		end
 
 		function CLIENT:GetPort()
 			if not self.connected then return "nil" end
-			local ip, port = self.socket:getpeername()
+			local ip, port 
+			
+			if self.__server then 
+				ip, port = self.socket:getpeername()
+			else
+				ip, port = self.socket:getsockname()
+			end
 			return ip and port or nil
+		end
+				
+		function CLIENT:GetIPPort()
+			if not self.connected then return "nil" end
+			local ip, port 
+			
+			if self.__server then 
+				ip, port = self.socket:getpeername()
+			else
+				ip, port = self.socket:getsockname()
+			end
+			return ip .. ":" .. port
+		end
+		
+		function CLIENT:GetSocketName()
+			return self.socket:getpeername()
 		end
 
 		function CLIENT:IsValid()
@@ -616,17 +691,7 @@ do -- tcp socket meta
 		end
 
 		function SERVER:GetClients()
-			local copy = {}
-
-			for key, client in pairs(self.Clients) do
-				if client:IsValid() then
-					table.insert(copy, client)
-				else
-					table.remove(self.Clients, key)
-				end
-			end
-
-			return copy
+			return self.Clients
 		end
 		
 		function SERVER:HasClients()
@@ -734,7 +799,7 @@ do -- tcp socket meta
 					
 					table.insert(self.Clients, client)
 					client.__server = self
-					
+										
 					local b = self:OnClientConnected(client, client:GetIP(), client:GetPort())
 
 					if b == true then
@@ -747,9 +812,15 @@ do -- tcp socket meta
 			end
 		end
 		
+		function SERVER:SuppressSend(client)
+			self.suppressed_send = client
+		end
+		
 		function SERVER:Broadcast(...)
 			for k,v in pairs(self:GetClients()) do
-				v:Send(...)
+				if self.suppressed_send ~= v then
+					v:Send(...)
+				end
 			end
 		end
 
@@ -778,6 +849,15 @@ do -- tcp socket meta
 		function SERVER:GetPort()
 			local ip, port = self.socket:getsockname()
 			return ip and port or nil
+		end
+		
+		function SERVER:GetIPPort()
+			local ip, port = self.socket:getsockname()
+			return ip .. ":" .. port
+		end
+		
+		function SERVER:GetSocketName()
+			return self.socket:getsockname()
 		end
 
 		function SERVER:OnClientConnected(client, ip, port) end

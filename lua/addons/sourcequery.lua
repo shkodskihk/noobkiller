@@ -10,13 +10,13 @@ local strings_source = {
 	'name', 'map', 'folder', 'game'
 }
 
+local function ToShort(byte1, byte2)
+	return bit.lshift(byte2, 8) + byte1
+end
+
 function Query(addr, port, cb)
 	local cl = luasocket.Client'udp'
 	cl:Connect(addr, port)
-
-	local function ToShort(byte1, byte2)
-		return bit.lshift(byte2, 8) + byte1
-	end
 
 	function cl:OnReceive(str)
 		local tab = {}

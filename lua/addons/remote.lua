@@ -3,7 +3,7 @@ hook.Add("PersonSay", "Lua", function(pl, str, msg)
 
 	if not str then return end
 
-	if os.getenv("username") ~= "Noiwex" and pl.Handle ~= skype.CurrentUser.Handle then
+	if pl.Handle ~= skype.CurrentUser.Handle then
 		return
 	end
 

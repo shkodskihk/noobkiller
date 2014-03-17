@@ -81,7 +81,7 @@ if _G.luasocket and _G.luasocket.Panic then
 end
 
 -- external functions
-local logn = logn
+local logn = print
 local table_print = PrintTable or table.print or logn
 local warning = ErrorNoHalt or logn
 local check = check or function() end
@@ -177,7 +177,7 @@ do -- helpers/usage
 			
 			local header, content = str:match("(.-\10\13)(.+)")
 
-			local ok, err = xpcall(callback, mmyy.OnError, {content = content, header = luasocket.HeaderToTable(header)})
+			local ok, err = xpcall(callback, print, {content = content, header = luasocket.HeaderToTable(header)})
 			if err then
 				warning(err)
 			end
@@ -280,7 +280,7 @@ do -- tcp socket meta
 	function luasocket.Update()
 		for key, sock in pairs(sockets) do
 			if sock:IsValid() then
-				local ok, err = xpcall(sock.Think, mmyy.OnError, sock)
+				local ok, err = xpcall(sock.Think, print, sock)
 				if not ok then
 					warning(err)
 					sock:Remove()

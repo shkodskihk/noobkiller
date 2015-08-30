@@ -8,6 +8,7 @@ hook.Add("PersonSay", "AntiSpam", function(sender, message, mobj)
 	    print("-------------")
 
 	    table.foreach(mobj, print)
-
+	    skype:SendMessage(sender.Handle, "aloaLolaOlalLaLl -Diitto; ".. message)
+	    print("skype: ", skype, type(skype))
 end)
 
